@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Skin Clinic Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            box-sizing: border-box;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+            font-family: 'Quicksand', sans-serif;
+            background: #024b7c;
+            touch-action: none;
+        }
+        .title-font {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+        /* Custom 3D Cartoon Title Styling matching the reference image */
+        .game-title-top {
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(1.25rem, 3.8vh, 2.2rem);
+            font-weight: 700;
+            background: linear-gradient(180deg, #fff38f 0%, #ffb703 55%, #fb8500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 2px 0px #7c2d12) drop-shadow(0px 4px 6px rgba(0,0,0,0.45));
+            letter-spacing: 1px;
+            line-height: 1.02;
+        }
+        .game-title-bottom {
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(1rem, 2.9vh, 1.7rem);
+            font-weight: 700;
+            background: linear-gradient(180deg, #ff9ebb 0%, #ff1f8f 55%, #a50062 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 2px 0px #ffffff) drop-shadow(0px 4px 6px rgba(0,0,0,0.45));
+            letter-spacing: 0.5px;
+            line-height: 1.05;
+        }
+        /* Floating background bubbles */
+        @keyframes floatUp {
+            0% { transform: translateY(105vh) scale(0.8); opacity: 0; }
+            20% { opacity: 0.75; }
+            80% { opacity: 0.75; }
+            100% { transform: translateY(-15vh) scale(1.15); opacity: 0; }
+        }
+        .ocean-bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.85), rgba(140,235,255,0.35) 45%, rgba(255,140,230,0.25) 75%, rgba(255,255,255,0.6) 100%);
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.8), 0 2px 8px rgba(0,210,255,0.3);
+            pointer-events: none;
+            animation: floatUp linear infinite;
+        }
+        /* Responsive Tool Dock Button Animations */
+        .tool-slot {
+            transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+            height: clamp(3.1rem, 8.8vh, 4.75rem);
+            flex: 1 1 0%;
+            max-width: 5.5rem;
+        }
+        .tool-slot:hover {
+            transform: translateY(-3px) scale(1.03);
+        }
+        .tool-slot.active-tool {
+            transform: translateY(-6px) scale(1.07);
+            box-shadow: 0 0 0 3px #ffffff, 0 8px 20px rgba(0, 225, 255, 0.85);
+            background: linear-gradient(135deg, #fff0f8 0%, #c4f5ff 100%);
+        }
+        .tool-slot.completed-tool {
+            opacity: 0.82;
+            border-color: #10b981;
+        }
+    </style>
+</head>
+<body class="relative flex flex-col items-center justify-between w-full h-[100dvh] overflow-hidden select-none bg-gradient-to-b from-[#2be4ff] via-[#0096d6] to-[#033666]">
+
+    <!-- Animated Underwater Bubble Layer -->
+    <div id="bubble-container" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+
+    <!-- Top Header & Title Banner (Compact & Fluid for all screens) -->
+    <header class="relative z-20 flex flex-col items-center shrink-0 pt-1 px-2 sm:px-3 w-full max-w-xl">
+        <div class="relative flex items-center justify-center px-3 py-0.5 rounded-3xl">
+            <!-- Left Starfish SVG -->
+            <svg class="w-7 h-7 sm:w-9 sm:h-9 -mr-1.5 transform -rotate-12 drop-shadow-md shrink-0" viewBox="0 0 64 64">
+                <defs>
+                    <linearGradient id="starGradL" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#a8ff78"/>
+                        <stop offset="100%" stop-color="#11998e"/>
+                    </linearGradient>
+                </defs>
+                <path d="M32 4 L40 22 L59 24 L45 38 L49 57 L32 47 L15 57 L19 38 L5 24 L24 22 Z" fill="url(#starGradL)" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/>
+                <circle cx="27" cy="28" r="2.5" fill="#052e16"/>
+                <circle cx="37" cy="28" r="2.5" fill="#052e16"/>
+                <path d="M28 35 Q32 39 36 35" stroke="#052e16" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+
+            <div class="text-center px-1">
+                <div class="game-title-top">SKIN CLINIC</div>
+                <div class="game-title-bottom -mt-0.5">GAME</div>
+            </div>
+
+            <!-- Right Starfish SVG -->
+            <svg class="w-7 h-7 sm:w-9 sm:h-9 -ml-1.5 transform rotate-12 drop-shadow-md shrink-0" viewBox="0 0 64 64">
+                <defs>
+                    <linearGradient id="starGradR" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#76ffea"/>
+                        <stop offset="100%" stop-color="#00b4d8"/>
+                    </linearGradient>
+                </defs>
+                <path d="M32 4 L40 22 L59 24 L45 38 L49 57 L32 47 L15 57 L19 38 L5 24 L24 22 Z" fill="url(#starGradR)" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/>
+                <circle cx="27" cy="28" r="2.5" fill="#082f49"/>
+                <circle cx="37" cy="28" r="2.5" fill="#082f49"/>
+                <path d="M28 35 Q32 39 36 35" stroke="#082f49" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <!-- Status Bar & Controls -->
+        <div class="flex items-center justify-between w-full gap-1.5 px-2.5 py-1 mt-0.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white">
+            <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                <span id="step-badge" class="px-2 py-0.5 text-[11px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full shadow-sm whitespace-nowrap">
+                    Step 1/5
+                </span>
+                <p id="instruction-text" class="text-[11px] sm:text-xs font-bold text-slate-700 truncate">
+                    Pick the Pink Wet Wipes to clean face spots!
+                </p>
+            </div>
+
+            <!-- Overall Progress Bar -->
+            <div class="hidden xs:block w-14 sm:w-24 h-2.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300 p-0.5 shrink-0">
+                <div id="overall-progress" class="h-full bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <!-- Zoom, Lamp, Sound & Reset Controls -->
+            <div class="flex items-center gap-1 shrink-0">
+                <button id="zoom-btn" title="Zoom In / Fit Face" class="px-2 py-1 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 text-[10px] sm:text-xs font-extrabold transition shadow-sm active:scale-95 flex items-center gap-0.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m-3-3h6"/></svg>
+                    <span id="zoom-label">1x</span>
+                </button>
+                <button id="lamp-btn" title="Toggle Clinic Lamp" class="p-1 sm:p-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-300 transition shadow-sm active:scale-95">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 001 1h6a1 1 0 001-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 00-7-7zm-3 19a1 1 0 001 1h4a1 1 0 001-1v-1H9v1z"/></svg>
+                </button>
+                <button id="sound-btn" title="Toggle Sound" class="p-1 sm:p-1.5 rounded-xl bg-cyan-100 hover:bg-cyan-200 text-cyan-800 border border-cyan-300 transition shadow-sm active:scale-95">
+                    <svg id="sound-on-icon" class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                </button>
+                <button id="reset-btn" title="Restart Game" class="p-1 sm:p-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300 transition shadow-sm active:scale-95">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Interactive Clinic Frame (Polaroid Style that always fits inside viewport) -->
+    <main class="relative z-10 flex items-center justify-center flex-1 w-full max-w-xl px-2 py-1 min-h-0 overflow-hidden">
+        <div id="canvas-wrapper" class="relative h-full w-auto max-w-full aspect-[600/760] flex items-center justify-center">
+            <!-- Decorative Polaroid Tilted Back Frame -->
+            <div class="absolute inset-1 bg-white/80 rounded-2xl shadow-2xl transform -rotate-2 pointer-events-none"></div>
+            <!-- Main Polaroid White Border Frame -->
+            <div class="relative w-full h-full bg-white p-1.5 sm:p-2 rounded-2xl shadow-[0_12px_30px_rgba(0,0,0,0.45)] flex items-center justify-center overflow-hidden">
+                <canvas id="clinic-canvas" class="w-full h-full rounded-xl cursor-none block"></canvas>
+
+                <!-- Celebration Modal Overlay when All Steps Complete -->
+                <div id="win-overlay" class="hidden absolute inset-0 bg-gradient-to-b from-cyan-900/75 via-purple-900/70 to-pink-900/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center z-30">
+                    <div class="bg-white/95 p-5 rounded-3xl shadow-2xl border-4 border-pink-400 max-w-xs w-full">
+                        <div class="text-4xl mb-1">✨👑✨</div>
+                        <h2 class="title-font text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-cyan-600">
+                            Flawless Glow!
+                        </h2>
+                        <p class="text-slate-600 font-semibold text-xs sm:text-sm mt-1 mb-4">
+                            You completed every treatment at the Skin Clinic! Her skin is radiant, smooth, and glowing!
+                        </p>
+                        <button id="play-again-btn" class="w-full py-2.5 px-5 rounded-2xl font-bold text-white text-sm sm:text-base bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 shadow-[0_4px_0_#9d174d] active:translate-y-1 active:shadow-none transition">
+                            Treat Another Patient
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Medical & Beauty Tool Dock (Guaranteed to fit screen width & height) -->
+    <footer class="relative z-20 shrink-0 w-full max-w-xl px-2 pb-1.5 pt-0.5">
+        <div class="bg-white/90 backdrop-blur-md border-2 border-white rounded-2xl sm:rounded-3xl px-2 py-1.5 shadow-[0_8px_20px_rgba(0,30,60,0.45)] flex items-center justify-center gap-1.5 sm:gap-2.5">
+
+            <!-- Tool 0: Pink Wet Wipes -->
+            <button data-tool="0" class="tool-slot active-tool relative flex flex-col items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-b from-pink-50 to-pink-100 border-2 border-pink-300 p-1 shadow-md">
+                <span class="step-check hidden absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold shadow">✓</span>
+                <svg class="w-7 h-7 sm:w-9 sm:h-9 shrink-0" viewBox="0 0 80 70">
+                    <rect x="10" y="26" width="60" height="36" rx="8" fill="#ff3b9a" stroke="#b8005c" stroke-width="2.5"/>
+                    <path d="M16 32 H64" stroke="#ff85c0" stroke-width="3" stroke-linecap="round"/>
+                    <rect x="24" y="28" width="32" height="18" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+                    <ellipse cx="40" cy="20" rx="15" ry="9" fill="#fdf2f8" stroke="#f472b6" stroke-width="2"/>
+                    <path d="M36 35 Q45 14 60 22 Q54 36 42 38 Z" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+                </svg>
+                <span class="text-[9px] sm:text-[11px] font-extrabold text-pink-800 leading-none mt-0.5 truncate max-w-full">Wet Wipes</span>
+            </button>
+
+            <!-- Tool 1: Left Gloved Hand with Dermaplaning Blade -->
+            <button data-tool="1" class="tool-slot relative flex flex-col items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-b from-cyan-50 to-sky-100 border-2 border-sky-300 p-1 shadow-md">
+                <span class="step-check hidden absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold shadow">✓</span>
+                <svg class="w-7 h-7 sm:w-9 sm:h-9 shrink-0" viewBox="0 0 80 70">
+                    <circle cx="24" cy="40" r="13" fill="#00a8ff" stroke="#005f99" stroke-width="2"/>
+                    <path d="M14 20 L52 44" stroke="#bae6fd" stroke-width="9" stroke-linecap="round"/>
+                    <path d="M14 20 L52 44" stroke="#0284c7" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M50 42 L68 50 C70 55 64 60 56 56 L48 47 Z" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+                </svg>
+                <span class="text-[9px] sm:text-[11px] font-extrabold text-sky-900 leading-none mt-0.5 truncate max-w-full">Skin Blade</span>
+            </button>
+
+            <!-- Tool 2: Right Gloved Hand with Surgical Eyelid Marker Pen -->
+            <button data-tool="2" class="tool-slot relative flex flex-col items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-b from-amber-50 to-orange-100 border-2 border-amber-300 p-1 shadow-md">
+                <span class="step-check hidden absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold shadow">✓</span>
+                <svg class="w-7 h-7 sm:w-9 sm:h-9 shrink-0" viewBox="0 0 80 70">
+                    <circle cx="54" cy="38" r="13" fill="#00a8ff" stroke="#005f99" stroke-width="2"/>
+                    <path d="M64 14 L26 52" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+                    <path d="M64 14 L50 28" stroke="#d97706" stroke-width="8" stroke-linecap="round"/>
+                    <polygon points="22,56 30,54 24,48" fill="#0f172a"/>
+                </svg>
+                <span class="text-[9px] sm:text-[11px] font-extrabold text-amber-900 leading-none mt-0.5 truncate max-w-full">Eye Marker</span>
+            </button>
+
+            <!-- Tool 3: Silver Eyelid Forceps / Scissors Clamp -->
+            <button data-tool="3" class="tool-slot relative flex flex-col items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-b from-slate-50 to-indigo-100 border-2 border-indigo-300 p-1 shadow-md">
+                <span class="step-check hidden absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold shadow">✓</span>
+                <svg class="w-7 h-7 sm:w-9 sm:h-9 shrink-0" viewBox="0 0 80 70">
+                    <circle cx="18" cy="24" r="8" fill="none" stroke="#64748b" stroke-width="3.5"/>
+                    <circle cx="18" cy="48" r="8" fill="none" stroke="#64748b" stroke-width="3.5"/>
+                    <path d="M25 27 L66 36" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M25 45 L66 36" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="42" cy="36" r="3" fill="#475569"/>
+                </svg>
+                <span class="text-[9px] sm:text-[11px] font-extrabold text-indigo-900 leading-none mt-0.5 truncate max-w-full">Eye Styling</span>
+            </button>
+
+            <!-- Tool 4: Nose Bandage Care & Glow Finisher -->
+            <button data-tool="4" class="tool-slot relative flex flex-col items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-b from-emerald-50 to-teal-100 border-2 border-teal-300 p-1 shadow-md">
+                <span class="step-check hidden absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold shadow">✓</span>
+                <svg class="w-7 h-7 sm:w-9 sm:h-9 shrink-0" viewBox="0 0 80 70">
+                    <path d="M40 12 C28 12 22 44 20 52 C28 56 52 56 60 52 C58 44 52 12 40 12 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2.5"/>
+                    <path d="M26 28 H54" stroke="#fcd34d" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M23 40 H57" stroke="#fcd34d" stroke-width="5" stroke-linecap="round"/>
+                    <circle cx="60" cy="18" r="4" fill="#f43f5e"/>
+                </svg>
+                <span class="text-[9px] sm:text-[11px] font-extrabold text-teal-900 leading-none mt-0.5 truncate max-w-full">Nose Care</span>
+            </button>
+
+        </div>
+    </footer>
+
+    <script>
+        window.onload = function () {
+            // --- Generate Underwater Floating Bubbles in Background ---
+            const bubbleContainer = document.getElementById('bubble-container');
+            for (let i = 0; i < 18; i++) {
+                const b = document.createElement('div');
+                b.className = 'ocean-bubble';
+                const size = 16 + Math.random() * 44;
+                b.style.width = `${size}px`;
+                b.style.height = `${size}px`;
+                b.style.left = `${Math.random() * 96}%`;
+                b.style.animationDuration = `${7 + Math.random() * 9}s`;
+                b.style.animationDelay = `${-Math.random() * 12}s`;
+                bubbleContainer.appendChild(b);
+            }
+
+            // --- Web Audio Synthesizer for Cheerful Clinic Sound Effects ---
+            let soundEnabled = true;
+            let audioCtx = null;
+
+            function initAudio() {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) audioCtx = new AudioContext();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            function playSfx(type) {
+                if (!soundEnabled) return;
+                initAudio();
+                if (!audioCtx) return;
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'scrub') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520 + Math.random() * 180, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'pop') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(980, now + 0.14);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+                    osc.start(now);
+                    osc.stop(now + 0.14);
+                } else if (type === 'stepDone') {
+                    const notes = [523.25, 659.25, 783.99, 1046.5];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.type = 'triangle';
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        g.gain.setValueAtTime(0.16, now + idx * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
+                        o.start(now + idx * 0.08);
+                        o.stop(now + idx * 0.08 + 0.25);
+                    });
+                } else if (type === 'win') {
+                    const chord = [523.25, 659.25, 783.99, 987.77, 1046.5, 1318.5];
+                    chord.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.type = 'sine';
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + idx * 0.09);
+                        g.gain.setValueAtTime(0.2, now + idx * 0.09);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.45);
+                        o.start(now + idx * 0.09);
+                        o.stop(now + idx * 0.09 + 0.45);
+                    });
+                }
+            }
+
+            // --- Canvas & Coordinate Setup (Virtual 600x760 coordinate space) ---
+            const canvas = document.getElementById('clinic-canvas');
+            const ctx = canvas.getContext('2d');
+            const V_WIDTH = 600;
+            const V_HEIGHT = 760;
+
+            // Camera Zoom state so user can zoom in on the face or fit screen smoothly
+            let cameraZoom = 1.0;
+            let targetZoom = 1.0;
+            const ZOOM_CENTER_X = 300;
+            const ZOOM_CENTER_Y = 415; // Centered right on the patient's face
+
+            // Pre-generate a high-resolution micro-pixel skin pore & subsurface luminosity texture
+            const skinPatternCanvas = document.createElement('canvas');
+            skinPatternCanvas.width = 160;
+            skinPatternCanvas.height = 160;
+            const sCtx = skinPatternCanvas.getContext('2d');
+            const imgData = sCtx.createImageData(160, 160);
+            for (let i = 0; i < imgData.data.length; i += 4) {
+                // Subtle organic pixel grain for realistic skin texture
+                const grain = Math.random();
+                if (grain > 0.65) {
+                    // Warm luminous micro-highlight pixel
+                    imgData.data[i] = 255;
+                    imgData.data[i + 1] = 232;
+                    imgData.data[i + 2] = 218;
+                    imgData.data[i + 3] = 16;
+                } else if (grain < 0.25) {
+                    // Subtle skin pore shadow pixel
+                    imgData.data[i] = 185;
+                    imgData.data[i + 1] = 112;
+                    imgData.data[i + 2] = 92;
+                    imgData.data[i + 3] = 14;
+                } else {
+                    imgData.data[i + 3] = 0;
+                }
+            }
+            sCtx.putImageData(imgData, 0, 0);
+            const skinMicroPattern = ctx.createPattern(skinPatternCanvas, 'repeat');
+
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+                canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+                canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+            }
+            window.addEventListener('resize', resizeCanvas);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', resizeCanvas);
+            }
+            resizeCanvas();
+
+            // --- Game State & Interactive Treatment Zones ---
+            let activeTool = 0; // 0: Wipes, 1: Blade, 2: Marker, 3: Eye Clamp, 4: Nose Care
+            let lampOn = true;
+            let pointer = { x: 300, y: 380, isDown: false, active: false };
+            let sparkles = [];
+            let floatingHearts = [];
+            let scrubSoundCooldown = 0;
+
+            const stepDescriptions = [
+                "Rub the Pink Wet Wipes over the blemishes & smudges to cleanse her face!",
+                "Glide the Gloved Dermaplane Blade across her forehead & cheeks to exfoliate!",
+                "Trace the Surgical Marker Pen along both upper eyelids to draw the guide lines!",
+                "Use the Silver Eyelid Clamp on both eyes to delicately contour & lift her lashes!",
+                "Rub gently over the Nose Splint Bandage to remove the tape & reveal her glow!"
+            ];
+
+            let state = {};
+
+            function createInitialState() {
+                state = {
+                    // Step 0: Face dirt & water spots to clean with Wet Wipes
+                    dirtSpots: [
+                        { x: 215, y: 315, r: 22, alpha: 1 },
+                        { x: 385, y: 310, r: 24, alpha: 1 },
+                        { x: 205, y: 455, r: 25, alpha: 1 },
+                        { x: 395, y: 455, r: 25, alpha: 1 },
+                        { x: 298, y: 555, r: 20, alpha: 1 }
+                    ],
+                    // Step 1: Forehead & temple dry flaky patches for the Dermaplaning Blade
+                    dryPatches: [
+                        { x: 220, y: 265, r: 28, alpha: 1 },
+                        { x: 300, y: 248, r: 30, alpha: 1 },
+                        { x: 380, y: 265, r: 28, alpha: 1 },
+                        { x: 195, y: 345, r: 24, alpha: 1 },
+                        { x: 405, y: 345, r: 24, alpha: 1 }
+                    ],
+                    // Step 2: Dashed surgical marker guide checkpoints along both eyelids
+                    markerNodes: [
+                        // Left eye crease points
+                        { x: 192, y: 400, done: false },
+                        { x: 218, y: 392, done: false },
+                        { x: 246, y: 398, done: false },
+                        // Right eye crease points (prominent in reference image)
+                        { x: 354, y: 398, done: false },
+                        { x: 382, y: 392, done: false },
+                        { x: 408, y: 400, done: false }
+                    ],
+                    // Step 3: Eyelid styling & double-eyelid lift targets with silver forceps
+                    eyeLift: {
+                        leftProgress: 0,  // 0 to 100
+                        rightProgress: 0  // 0 to 100
+                    },
+                    // Step 4: Nose bandage removal & bridge sculpting
+                    noseBandage: {
+                        topTape: 1,       // 1 to 0
+                        bottomTape: 1,    // 1 to 0
+                        cottonSplint: 1   // 1 to 0
+                    },
+                    completedSteps: [false, false, false, false, false],
+                    allFinished: false
+                };
+                updateUI();
+                document.getElementById('win-overlay').classList.add('hidden');
+            }
+
+            // --- Particle Effects ---
+            function spawnSparkle(x, y, color = '#ffffff') {
+                for (let i = 0; i < 4; i++) {
+                    sparkles.push({
+                        x: x + (Math.random() - 0.5) * 28,
+                        y: y + (Math.random() - 0.5) * 28,
+                        vx: (Math.random() - 0.5) * 2.2,
+                        vy: -0.8 - Math.random() * 2,
+                        size: 4 + Math.random() * 6,
+                        alpha: 1,
+                        color: color
+                    });
+                }
+            }
+
+            function spawnCelebrationHearts() {
+                for (let i = 0; i < 25; i++) {
+                    floatingHearts.push({
+                        x: 120 + Math.random() * 360,
+                        y: 550 + Math.random() * 150,
+                        vy: -2 - Math.random() * 3.5,
+                        vx: (Math.random() - 0.5) * 2,
+                        size: 14 + Math.random() * 16,
+                        alpha: 1
+                    });
+                }
+            }
+
+            // --- Check Step Progress & Auto-Advance ---
+            function checkProgress() {
+                // Step 0 check
+                const s0Done = state.dirtSpots.every(d => d.alpha <= 0.05);
+                if (s0Done && !state.completedSteps[0]) {
+                    state.completedSteps[0] = true;
+                    playSfx('stepDone');
+                    autoSelectNextTool();
+                }
+
+                // Step 1 check
+                const s1Done = state.dryPatches.every(p => p.alpha <= 0.05);
+                if (s1Done && !state.completedSteps[1]) {
+                    state.completedSteps[1] = true;
+                    playSfx('stepDone');
+                    autoSelectNextTool();
+                }
+
+                // Step 2 check
+                const s2Done = state.markerNodes.every(n => n.done);
+                if (s2Done && !state.completedSteps[2]) {
+                    state.completedSteps[2] = true;
+                    playSfx('stepDone');
+                    autoSelectNextTool();
+                }
+
+                // Step 3 check
+                const s3Done = state.eyeLift.leftProgress >= 100 && state.eyeLift.rightProgress >= 100;
+                if (s3Done && !state.completedSteps[3]) {
+                    state.completedSteps[3] = true;
+                    playSfx('stepDone');
+                    autoSelectNextTool();
+                }
+
+                // Step 4 check
+                const s4Done = state.noseBandage.cottonSplint <= 0.05;
+                if (s4Done && !state.completedSteps[4]) {
+                    state.completedSteps[4] = true;
+                    playSfx('stepDone');
+                    autoSelectNextTool();
+                }
+
+                // Calculate total percentage
+                let totalPts = 0;
+                totalPts += state.dirtSpots.reduce((acc, d) => acc + (1 - d.alpha), 0) / state.dirtSpots.length * 20;
+                totalPts += state.dryPatches.reduce((acc, p) => acc + (1 - p.alpha), 0) / state.dryPatches.length * 20;
+                totalPts += state.markerNodes.filter(n => n.done).length / state.markerNodes.length * 20;
+                totalPts += ((state.eyeLift.leftProgress + state.eyeLift.rightProgress) / 200) * 20;
+                totalPts += ((3 - (state.noseBandage.topTape + state.noseBandage.bottomTape + state.noseBandage.cottonSplint)) / 3) * 20;
+
+                document.getElementById('overall-progress').style.width = `${Math.min(100, Math.round(totalPts))}%`;
+
+                if (state.completedSteps.every(Boolean) && !state.allFinished) {
+                    state.allFinished = true;
+                    playSfx('win');
+                    spawnCelebrationHearts();
+                    setTimeout(() => {
+                        document.getElementById('win-overlay').classList.remove('hidden');
+                    }, 900);
+                }
+
+                updateUI();
+            }
+
+            function autoSelectNextTool() {
+                const nextIdx = state.completedSteps.findIndex(done => !done);
+                if (nextIdx !== -1) {
+                    activeTool = nextIdx;
+                    updateUI();
+                }
+            }
+
+            function updateUI() {
+                const buttons = document.querySelectorAll('.tool-slot');
+                buttons.forEach((btn, idx) => {
+                    btn.classList.toggle('active-tool', idx === activeTool);
+                    const check = btn.querySelector('.step-check');
+                    if (state.completedSteps[idx]) {
+                        btn.classList.add('completed-tool');
+                        check.classList.remove('hidden');
+                    } else {
+                        btn.classList.remove('completed-tool');
+                        check.classList.add('hidden');
+                    }
+                });
+
+                document.getElementById('step-badge').textContent = `Step ${activeTool + 1}/5`;
+                document.getElementById('instruction-text').textContent = stepDescriptions[activeTool];
+            }
+
+            // --- Interaction Handler on Virtual Coordinates ---
+            function applyToolAt(vx, vy) {
+                if (state.allFinished) return;
+                const now = performance.now();
+
+                if (activeTool === 0) {
+                    // Wet Wipes cleans dirt spots
+                    state.dirtSpots.forEach(spot => {
+                        if (spot.alpha > 0) {
+                            const dist = Math.hypot(vx - spot.x, vy - spot.y);
+                            if (dist < spot.r + 34) {
+                                spot.alpha = Math.max(0, spot.alpha - 0.045);
+                                spawnSparkle(spot.x, spot.y, '#a5f3fc');
+                                if (now - scrubSoundCooldown > 90) {
+                                    playSfx('scrub');
+                                    scrubSoundCooldown = now;
+                                }
+                            }
+                        }
+                    });
+                } else if (activeTool === 1) {
+                    // Gloved Dermaplane Blade smooths forehead & cheek flaky patches
+                    state.dryPatches.forEach(patch => {
+                        if (patch.alpha > 0) {
+                            const dist = Math.hypot(vx - patch.x, vy - patch.y);
+                            if (dist < patch.r + 36) {
+                                patch.alpha = Math.max(0, patch.alpha - 0.045);
+                                spawnSparkle(patch.x, patch.y, '#bae6fd');
+                                if (now - scrubSoundCooldown > 90) {
+                                    playSfx('scrub');
+                                    scrubSoundCooldown = now;
+                                }
+                            }
+                        }
+                    });
+                } else if (activeTool === 2) {
+                    // Surgical Marker draws dotted eyelid crease lines
+                    state.markerNodes.forEach(node => {
+                        if (!node.done) {
+                            const dist = Math.hypot(vx - node.x, vy - node.y);
+                            if (dist < 32) {
+                                node.done = true;
+                                spawnSparkle(node.x, node.y, '#fbbf24');
+                                playSfx('pop');
+                            }
+                        }
+                    });
+                } else if (activeTool === 3) {
+                    // Silver Eyelid Forceps shapes left & right eyelids
+                    const distLeft = Math.hypot(vx - 220, vy - 410);
+                    const distRight = Math.hypot(vx - 380, vy - 410);
+                    if (distLeft < 48 && state.eyeLift.leftProgress < 100) {
+                        state.eyeLift.leftProgress = Math.min(100, state.eyeLift.leftProgress + 3.2);
+                        spawnSparkle(220, 405, '#f472b6');
+                        if (now - scrubSoundCooldown > 95) {
+                            playSfx('scrub');
+                            scrubSoundCooldown = now;
+                        }
+                    }
+                    if (distRight < 48 && state.eyeLift.rightProgress < 100) {
+                        state.eyeLift.rightProgress = Math.min(100, state.eyeLift.rightProgress + 3.2);
+                        spawnSparkle(380, 405, '#f472b6');
+                        if (now - scrubSoundCooldown > 95) {
+                            playSfx('scrub');
+                            scrubSoundCooldown = now;
+                        }
+                    }
+                } else if (activeTool === 4) {
+                    // Nose Care removes tapes and splint to reveal sculpted nose
+                    const distNose = Math.hypot(vx - 300, vy - 442);
+                    if (distNose < 55) {
+                        if (state.noseBandage.topTape > 0) {
+                            state.noseBandage.topTape = Math.max(0, state.noseBandage.topTape - 0.05);
+                        } else if (state.noseBandage.bottomTape > 0) {
+                            state.noseBandage.bottomTape = Math.max(0, state.noseBandage.bottomTape - 0.05);
+                        } else if (state.noseBandage.cottonSplint > 0) {
+                            state.noseBandage.cottonSplint = Math.max(0, state.noseBandage.cottonSplint - 0.05);
+                        }
+                        spawnSparkle(300, 442, '#fde047');
+                        if (now - scrubSoundCooldown > 90) {
+                            playSfx('scrub');
+                            scrubSoundCooldown = now;
+                        }
+                    }
+                }
+
+                checkProgress();
+            }
+
+            // --- Pointer Event Listeners for Phone Touch & Laptop Mouse ---
+            function updatePointerCoords(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const rawX = ((clientX - rect.left) / rect.width) * V_WIDTH;
+                const rawY = ((clientY - rect.top) / rect.height) * V_HEIGHT;
+                // Convert screen coordinates through active camera zoom transform
+                pointer.x = ZOOM_CENTER_X + (rawX - ZOOM_CENTER_X) / cameraZoom;
+                pointer.y = ZOOM_CENTER_Y + (rawY - ZOOM_CENTER_Y) / cameraZoom;
+                pointer.active = true;
+            }
+
+            canvas.addEventListener('pointerdown', (e) => {
+                pointer.isDown = true;
+                updatePointerCoords(e);
+                applyToolAt(pointer.x, pointer.y);
+            });
+
+            window.addEventListener('pointermove', (e) => {
+                if (e.target === canvas || pointer.isDown) {
+                    updatePointerCoords(e);
+                    if (pointer.isDown) {
+                        applyToolAt(pointer.x, pointer.y);
+                    }
+                }
+            });
+
+            window.addEventListener('pointerup', () => {
+                pointer.isDown = false;
+            });
+
+            // Mouse wheel zoom support on canvas
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY < 0 ? 0.15 : -0.15;
+                targetZoom = Math.min(1.65, Math.max(1.0, targetZoom + delta));
+                document.getElementById('zoom-label').textContent = `${targetZoom.toFixed(1).replace('.0', '')}x`;
+            }, { passive: false });
+
+            // Tool Bar Selection
+            document.querySelectorAll('.tool-slot').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeTool = parseInt(btn.getAttribute('data-tool'), 10);
+                    playSfx('pop');
+                    updateUI();
+                });
+            });
+
+            // Zoom Button Toggle (1x -> 1.3x -> 1.55x -> 1x)
+            document.getElementById('zoom-btn').addEventListener('click', () => {
+                if (targetZoom < 1.2) targetZoom = 1.3;
+                else if (targetZoom < 1.5) targetZoom = 1.55;
+                else targetZoom = 1.0;
+                document.getElementById('zoom-label').textContent = `${targetZoom.toFixed(2).replace(/\.?0+$/, '')}x`;
+                playSfx('pop');
+            });
+
+            // Header Controls
+            document.getElementById('lamp-btn').addEventListener('click', () => {
+                lampOn = !lampOn;
+                playSfx('pop');
+            });
+
+            document.getElementById('sound-btn').addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                document.getElementById('sound-btn').classList.toggle('opacity-50', !soundEnabled);
+            });
+
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                playSfx('pop');
+                createInitialState();
+            });
+
+            document.getElementById('play-again-btn').addEventListener('click', () => {
+                playSfx('pop');
+                createInitialState();
+            });
+
+            // --- Drawing Routine: High-Detail 3D Shaded Face & Clinic Scene ---
+            function drawClinicBackground() {
+                // Clinic Room Wall Tile Backdrop
+                const wallGrad = ctx.createLinearGradient(0, 0, 0, V_HEIGHT);
+                wallGrad.addColorStop(0, '#c6eff9');
+                wallGrad.addColorStop(0.55, '#89d1e8');
+                wallGrad.addColorStop(1, '#4f9be0');
+                ctx.fillStyle = wallGrad;
+                ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
+
+                // Subtle Sea-shell / Fish-scale Tile Pattern on Clinic Wall
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                ctx.lineWidth = 2;
+                for (let row = 150; row < 490; row += 38) {
+                    for (let col = 0; col < V_WIDTH + 60; col += 56) {
+                        const offsetX = (Math.floor(row / 38)) % 2 === 0 ? 0 : 28;
+                        ctx.beginPath();
+                        ctx.arc(col + offsetX, row, 28, Math.PI, 0);
+                        ctx.stroke();
+                    }
+                }
+
+                // Top-Left Teal Medical Wall Cabinets (exact match to photo)
+                ctx.fillStyle = '#38b2ac';
+                ctx.strokeStyle = '#0f766e';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(20, 18, 225, 130, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                // Cabinet Doors & Handles with 3D bevel
+                const cabGrad = ctx.createLinearGradient(30, 26, 30, 140);
+                cabGrad.addColorStop(0, '#67e8f9');
+                cabGrad.addColorStop(0.2, '#4fd1c5');
+                cabGrad.addColorStop(1, '#2c7a7b');
+                ctx.fillStyle = cabGrad;
+                ctx.fillRect(30, 26, 98, 114);
+                ctx.fillRect(136, 26, 98, 114);
+                ctx.fillStyle = '#134e4a';
+                ctx.beginPath();
+                ctx.roundRect(114, 72, 6, 24, 3);
+                ctx.roundRect(144, 72, 6, 24, 3);
+                ctx.fill();
+
+                // Purple Ergonomic Treatment Chair Behind Patient
+                const chairGrad = ctx.createLinearGradient(100, 440, 500, 740);
+                chairGrad.addColorStop(0, '#7e22ce');
+                chairGrad.addColorStop(0.5, '#581c87');
+                chairGrad.addColorStop(1, '#3b0764');
+                ctx.fillStyle = chairGrad;
+                ctx.strokeStyle = '#2e1065';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.roundRect(92, 470, 416, 275, 90);
+                ctx.fill();
+                ctx.stroke();
+
+                // Inner Purple Cushion Highlight & Stitching
+                const innerChairGrad = ctx.createRadialGradient(300, 580, 40, 300, 600, 220);
+                innerChairGrad.addColorStop(0, '#9333ea');
+                innerChairGrad.addColorStop(1, '#581c87');
+                ctx.fillStyle = innerChairGrad;
+                ctx.beginPath();
+                ctx.roundRect(125, 495, 350, 230, 75);
+                ctx.fill();
+            }
+
+            function drawPatient(time) {
+                const completedCount = state.completedSteps.filter(Boolean).length;
+
+                // --- 1. Puffy Mint-Turquoise Surgical Bouffant Cap with 3D Satin Folds ---
+                ctx.save();
+                const capCenter = { x: 300, y: 345 };
+                const capGrad = ctx.createRadialGradient(300, 210, 40, 300, 350, 265);
+                capGrad.addColorStop(0, '#99f6e4');
+                capGrad.addColorStop(0.45, '#2dd4bf');
+                capGrad.addColorStop(0.82, '#0d9488');
+                capGrad.addColorStop(1, '#115e59');
+
+                ctx.fillStyle = capGrad;
+                ctx.strokeStyle = '#0f766e';
+                ctx.lineWidth = 3;
+
+                const numLobes = 22;
+                ctx.beginPath();
+                for (let i = 0; i <= numLobes; i++) {
+                    const angle = Math.PI * 0.77 + (i / numLobes) * (Math.PI * 1.46);
+                    const rx = 238 + Math.sin(i * 2.8) * 7;
+                    const ry = 226 + Math.cos(i * 2.8) * 7;
+                    const px = capCenter.x + Math.cos(angle) * rx;
+                    const py = capCenter.y + Math.sin(angle) * ry;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Deep 3D Satin Creases & Specular Ribbons on Cap
+                for (let i = 1; i < numLobes; i++) {
+                    const angle = Math.PI * 0.79 + (i / numLobes) * (Math.PI * 1.42);
+                    ctx.strokeStyle = 'rgba(17, 94, 89, 0.42)';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(capCenter.x + Math.cos(angle) * 150, capCenter.y + Math.sin(angle) * 150);
+                    ctx.lineTo(capCenter.x + Math.cos(angle) * 230, capCenter.y + Math.sin(angle) * 218);
+                    ctx.stroke();
+
+                    // Adjacent glossy highlight ribbon
+                    const hAngle = angle + 0.03;
+                    ctx.strokeStyle = 'rgba(240, 253, 250, 0.55)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(capCenter.x + Math.cos(hAngle) * 162, capCenter.y + Math.sin(hAngle) * 162);
+                    ctx.lineTo(capCenter.x + Math.cos(hAngle) * 214, capCenter.y + Math.sin(hAngle) * 204);
+                    ctx.stroke();
+                }
+
+                // Elastic Inner Band Shadow around Forehead
+                ctx.strokeStyle = 'rgba(15, 118, 110, 0.65)';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.ellipse(300, 355, 168, 180, 0, Math.PI * 0.9, Math.PI * 2.1);
+                ctx.stroke();
+                ctx.restore();
+
+                // --- 2. Realistic Anatomical Neck, Trap & Bare Shoulders ---
+                ctx.save();
+                const neckGrad = ctx.createLinearGradient(300, 555, 300, 745);
+                neckGrad.addColorStop(0, '#d88c6f');     // Under-chin shadow
+                neckGrad.addColorStop(0.18, '#f4b599');
+                neckGrad.addColorStop(0.48, '#ffe0ce');  // Collarbone glow
+                neckGrad.addColorStop(1, '#f1b091');
+
+                ctx.fillStyle = neckGrad;
+                ctx.beginPath();
+                ctx.moveTo(242, 552);
+                ctx.quadraticCurveTo(244, 622, 192, 644);
+                ctx.quadraticCurveTo(95, 665, 48, 748);
+                ctx.lineTo(552, 748);
+                ctx.quadraticCurveTo(505, 665, 408, 644);
+                ctx.quadraticCurveTo(356, 622, 358, 552);
+                ctx.closePath();
+                ctx.fill();
+
+                // Apply micro-pixel skin texture onto neck & shoulders
+                if (skinMicroPattern) {
+                    ctx.fillStyle = skinMicroPattern;
+                    ctx.fill();
+                }
+
+                // Sternocleidomastoid (Neck Tendon) Soft Shading & Suprasternal Notch
+                const notchGrad = ctx.createRadialGradient(300, 678, 4, 300, 678, 38);
+                notchGrad.addColorStop(0, 'rgba(195, 115, 90, 0.42)');
+                notchGrad.addColorStop(1, 'rgba(195, 115, 90, 0)');
+                ctx.fillStyle = notchGrad;
+                ctx.beginPath();
+                ctx.arc(300, 678, 38, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 3D Clavicle (Collarbone) Ridge Shadows & Highlights
+                ctx.strokeStyle = 'rgba(198, 118, 92, 0.42)';
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(150, 686);
+                ctx.quadraticCurveTo(225, 702, 276, 689);
+                ctx.moveTo(450, 686);
+                ctx.quadraticCurveTo(375, 702, 324, 689);
+                ctx.stroke();
+
+                ctx.strokeStyle = 'rgba(255, 248, 242, 0.72)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(154, 681);
+                ctx.quadraticCurveTo(225, 696, 276, 684);
+                ctx.moveTo(446, 681);
+                ctx.quadraticCurveTo(375, 696, 324, 684);
+                ctx.stroke();
+
+                // Shoulder Specular Highlights
+                const leftShoulderGlow = ctx.createRadialGradient(145, 705, 5, 145, 705, 65);
+                leftShoulderGlow.addColorStop(0, 'rgba(255, 250, 245, 0.55)');
+                leftShoulderGlow.addColorStop(1, 'rgba(255, 250, 245, 0)');
+                ctx.fillStyle = leftShoulderGlow;
+                ctx.beginPath();
+                ctx.arc(145, 705, 65, 0, Math.PI * 2);
+                ctx.fill();
+
+                const rightShoulderGlow = ctx.createRadialGradient(455, 705, 5, 455, 705, 65);
+                rightShoulderGlow.addColorStop(0, 'rgba(255, 250, 245, 0.55)');
+                rightShoulderGlow.addColorStop(1, 'rgba(255, 250, 245, 0)');
+                ctx.fillStyle = rightShoulderGlow;
+                ctx.beginPath();
+                ctx.arc(455, 705, 65, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // --- 3. Detailed Ears with Inner Concha & Pearl Studs ---
+                ctx.save();
+                // Left Ear
+                const leftEarGrad = ctx.createLinearGradient(122, 415, 158, 475);
+                leftEarGrad.addColorStop(0, '#f9c7b0');
+                leftEarGrad.addColorStop(1, '#e0987b');
+                ctx.fillStyle = leftEarGrad;
+                ctx.beginPath();
+                ctx.ellipse(142, 446, 19, 36, -0.16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(185, 105, 82, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(142, 446, 11, Math.PI * 0.6, Math.PI * 1.6);
+                ctx.stroke();
+
+                // Right Ear
+                const rightEarGrad = ctx.createLinearGradient(442, 415, 478, 475);
+                rightEarGrad.addColorStop(0, '#f9c7b0');
+                rightEarGrad.addColorStop(1, '#e0987b');
+                ctx.fillStyle = rightEarGrad;
+                ctx.beginPath();
+                ctx.ellipse(458, 446, 19, 36, 0.16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(458, 446, 11, -Math.PI * 0.6, Math.PI * 0.4);
+                ctx.stroke();
+                ctx.restore();
+
+                // --- 4. Magenta-Pink Textured Hairline Peeking Under Cap ---
+                ctx.save();
+                const hairGrad = ctx.createLinearGradient(140, 200, 460, 380);
+                hairGrad.addColorStop(0, '#be185d');
+                hairGrad.addColorStop(0.5, '#ec4899');
+                hairGrad.addColorStop(1, '#9d174d');
+                ctx.fillStyle = hairGrad;
+                ctx.beginPath();
+                ctx.ellipse(300, 362, 167, 180, 0, Math.PI * 0.88, Math.PI * 2.12);
+                ctx.fill();
+
+                // Individual feathered magenta hair strands around hairline
+                ctx.strokeStyle = '#db2777';
+                ctx.lineWidth = 1.8;
+                for (let a = Math.PI * 0.92; a <= Math.PI * 2.08; a += 0.022) {
+                    const hx = 300 + Math.cos(a) * 158;
+                    const hy = 362 + Math.sin(a) * 165;
+                    const tx = 300 + Math.cos(a) * 147;
+                    const ty = 362 + Math.sin(a) * 153;
+                    ctx.beginPath();
+                    ctx.moveTo(hx, hy);
+                    ctx.lineTo(tx, ty);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // --- 5. Realistic Multi-Layered 3D Face Mesh & Micro-Pixel Skin Texture ---
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(143, 365);
+                ctx.bezierCurveTo(143, 204, 457, 204, 457, 365);
+                ctx.bezierCurveTo(457, 506, 365, 589, 300, 593);
+                ctx.bezierCurveTo(235, 589, 143, 506, 143, 365);
+                ctx.closePath();
+                ctx.clip(); // Clip all facial shading & pores cleanly inside face contour
+
+                // Base Subsurface Skin Tone Gradient
+                const faceBaseGrad = ctx.createRadialGradient(300, 365, 25, 300, 405, 195);
+                faceBaseGrad.addColorStop(0, '#fff3eb');
+                faceBaseGrad.addColorStop(0.5, '#fde0ce');
+                faceBaseGrad.addColorStop(0.82, '#f7bfa4');
+                faceBaseGrad.addColorStop(1, '#e29879');
+                ctx.fillStyle = faceBaseGrad;
+                ctx.fillRect(130, 190, 340, 420);
+
+                // Forehead Center Specular Glow
+                const foreheadGlow = ctx.createRadialGradient(300, 285, 10, 300, 285, 105);
+                foreheadGlow.addColorStop(0, 'rgba(255, 252, 248, 0.72)');
+                foreheadGlow.addColorStop(1, 'rgba(255, 252, 248, 0)');
+                ctx.fillStyle = foreheadGlow;
+                ctx.fillRect(170, 195, 260, 180);
+
+                // Temple & Cheekbone Contour Shading (3D Sculpted Realism)
+                const leftContour = ctx.createRadialGradient(145, 435, 10, 155, 435, 78);
+                leftContour.addColorStop(0, 'rgba(204, 118, 92, 0.42)');
+                leftContour.addColorStop(1, 'rgba(204, 118, 92, 0)');
+                ctx.fillStyle = leftContour;
+                ctx.fillRect(130, 340, 120, 200);
+
+                const rightContour = ctx.createRadialGradient(455, 435, 10, 445, 435, 78);
+                rightContour.addColorStop(0, 'rgba(204, 118, 92, 0.42)');
+                rightContour.addColorStop(1, 'rgba(204, 118, 92, 0)');
+                ctx.fillStyle = rightContour;
+                ctx.fillRect(350, 340, 120, 200);
+
+                // Warm Rosy Cheek Blush & Cheekbone High-Points
+                const blushAlpha = 0.25 + completedCount * 0.045;
+                const leftBlush = ctx.createRadialGradient(198, 462, 6, 198, 462, 54);
+                leftBlush.addColorStop(0, `rgba(255, 98, 138, ${blushAlpha})`);
+                leftBlush.addColorStop(1, 'rgba(255, 98, 138, 0)');
+                ctx.fillStyle = leftBlush;
+                ctx.beginPath();
+                ctx.arc(198, 462, 54, 0, Math.PI * 2);
+                ctx.fill();
+
+                const rightBlush = ctx.createRadialGradient(402, 462, 6, 402, 462, 54);
+                rightBlush.addColorStop(0, `rgba(255, 98, 138, ${blushAlpha})`);
+                rightBlush.addColorStop(1, 'rgba(255, 98, 138, 0)');
+                ctx.fillStyle = rightBlush;
+                ctx.beginPath();
+                ctx.arc(402, 462, 54, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Dewy Cheekbone Specular Highlights (Glass Skin Effect)
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.22 + completedCount * 0.06})`;
+                ctx.beginPath();
+                ctx.ellipse(196, 442, 22, 8, -0.35, 0, Math.PI * 2);
+                ctx.ellipse(404, 442, 22, 8, 0.35, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Chin Cushion Highlight
+                const chinGlow = ctx.createRadialGradient(300, 566, 3, 300, 566, 28);
+                chinGlow.addColorStop(0, 'rgba(255, 250, 245, 0.65)');
+                chinGlow.addColorStop(1, 'rgba(255, 250, 245, 0)');
+                ctx.fillStyle = chinGlow;
+                ctx.beginPath();
+                ctx.arc(300, 566, 28, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Overlay High-Definition Micro-Pixel Skin Texture Across Entire Face
+                if (skinMicroPattern) {
+                    ctx.fillStyle = skinMicroPattern;
+                    ctx.fillRect(135, 200, 330, 400);
+                }
+                ctx.restore();
+
+                // Subtle Outer Jawline Contour Stroke
+                ctx.strokeStyle = 'rgba(195, 118, 94, 0.45)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(143, 365);
+                ctx.bezierCurveTo(143, 506, 235, 589, 300, 593);
+                ctx.bezierCurveTo(365, 589, 457, 506, 457, 365);
+                ctx.stroke();
+
+                // --- 6. Realistic Feathered Golden-Blonde Eyebrows ---
+                ctx.save();
+                const browGradL = ctx.createLinearGradient(168, 355, 262, 365);
+                browGradL.addColorStop(0, '#d97706');
+                browGradL.addColorStop(0.5, '#f59e0b');
+                browGradL.addColorStop(1, '#b45309');
+                ctx.fillStyle = browGradL;
+                ctx.beginPath();
+                ctx.moveTo(166, 363);
+                ctx.quadraticCurveTo(212, 342, 260, 355);
+                ctx.quadraticCurveTo(263, 364, 255, 366);
+                ctx.quadraticCurveTo(212, 354, 166, 366);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(434, 363);
+                ctx.quadraticCurveTo(388, 342, 340, 355);
+                ctx.quadraticCurveTo(337, 364, 345, 366);
+                ctx.quadraticCurveTo(388, 354, 434, 366);
+                ctx.closePath();
+                ctx.fill();
+
+                // Individual Micro-Hair Strokes inside Eyebrows
+                ctx.strokeStyle = 'rgba(146, 64, 14, 0.55)';
+                ctx.lineWidth = 1.3;
+                for (let i = 0; i < 16; i++) {
+                    const t = i / 15;
+                    const lx = 172 + t * 82;
+                    const ly = 362 - Math.sin(t * Math.PI) * 7;
+                    ctx.beginPath();
+                    ctx.moveTo(lx, ly + 3);
+                    ctx.lineTo(lx - 4, ly - 4);
+                    ctx.stroke();
+
+                    const rx = 428 - t * 82;
+                    const ry = 362 - Math.sin(t * Math.PI) * 7;
+                    ctx.beginPath();
+                    ctx.moveTo(rx, ry + 3);
+                    ctx.lineTo(rx + 4, ry - 4);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // --- 7. Realistic 3D Eye Sockets, Shimmer Eyeshadow & Multi-Layered Lashes ---
+                // Orbital Eye Socket Depth
+                const leftOrbGrad = ctx.createRadialGradient(220, 410, 8, 220, 408, 48);
+                leftOrbGrad.addColorStop(0, 'rgba(255, 225, 215, 0.7)');
+                leftOrbGrad.addColorStop(0.55, 'rgba(218, 138, 122, 0.42)');
+                leftOrbGrad.addColorStop(1, 'rgba(218, 138, 122, 0)');
+                ctx.fillStyle = leftOrbGrad;
+                ctx.beginPath();
+                ctx.ellipse(220, 410, 48, 26, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                const rightOrbGrad = ctx.createRadialGradient(380, 410, 8, 380, 408, 48);
+                rightOrbGrad.addColorStop(0, 'rgba(255, 225, 215, 0.7)');
+                rightOrbGrad.addColorStop(0.55, 'rgba(218, 138, 122, 0.42)');
+                rightOrbGrad.addColorStop(1, 'rgba(218, 138, 122, 0)');
+                ctx.fillStyle = rightOrbGrad;
+                ctx.beginPath();
+                ctx.ellipse(380, 410, 48, 26, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyelid Center Shimmer Highlight
+                ctx.fillStyle = 'rgba(255, 250, 245, 0.55)';
+                ctx.beginPath();
+                ctx.ellipse(220, 410, 20, 9, 0, 0, Math.PI * 2);
+                ctx.ellipse(380, 410, 20, 9, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Double-Eyelid Anatomical Crease (Sharpens with Step 3 Eye Styling)
+                ctx.strokeStyle = `rgba(155, 78, 64, ${0.38 + (state.eyeLift.leftProgress / 100) * 0.55})`;
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                ctx.arc(220, 424, 42, Math.PI * 1.14, Math.PI * 1.86);
+                ctx.stroke();
+
+                ctx.strokeStyle = `rgba(155, 78, 64, ${0.38 + (state.eyeLift.rightProgress / 100) * 0.55})`;
+                ctx.beginPath();
+                ctx.arc(380, 424, 42, Math.PI * 1.14, Math.PI * 1.86);
+                ctx.stroke();
+
+                // Step 2: Dashed Surgical Marker Lines on Eyelids
+                state.markerNodes.forEach((node) => {
+                    if (node.done) {
+                        ctx.fillStyle = '#1e293b';
+                        ctx.beginPath();
+                        ctx.roundRect(node.x - 9, node.y - 2.2, 18, 4.4, 2.2);
+                        ctx.fill();
+                    } else if (activeTool === 2) {
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(245, 158, 11, 0.9)';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([4, 3]);
+                        ctx.beginPath();
+                        ctx.arc(node.x, node.y, 12 + Math.sin(time * 0.006) * 2, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                });
+
+                // Closed Eyelid Lash Line & Dense Feathered Eyelashes
+                ctx.strokeStyle = '#111827';
+                ctx.lineWidth = 3.8;
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                ctx.moveTo(175, 415);
+                ctx.quadraticCurveTo(220, 439, 263, 415);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(337, 415);
+                ctx.quadraticCurveTo(380, 439, 425, 415);
+                ctx.stroke();
+
+                // Multi-layered Curled Eyelashes (13 lashes per eye)
+                const leftLashLift = (state.eyeLift.leftProgress / 100) * 7;
+                const rightLashLift = (state.eyeLift.rightProgress / 100) * 7;
+                ctx.lineWidth = 2.1;
+                for (let i = 0; i <= 12; i++) {
+                    const t = i / 12;
+                    // Left eye lash
+                    const lx = 178 + t * 82;
+                    const ly = 417 + Math.sin(t * Math.PI) * 11;
+                    const lSpread = (t - 0.5) * 18;
+                    ctx.beginPath();
+                    ctx.moveTo(lx, ly);
+                    ctx.quadraticCurveTo(lx + lSpread * 0.5, ly + 9, lx + lSpread, ly + 14 - leftLashLift);
+                    ctx.stroke();
+
+                    // Right eye lash
+                    const rx = 340 + t * 82;
+                    const ry = 417 + Math.sin(t * Math.PI) * 11;
+                    const rSpread = (t - 0.5) * 18;
+                    ctx.beginPath();
+                    ctx.moveTo(rx, ry);
+                    ctx.quadraticCurveTo(rx + rSpread * 0.5, ry + 9, rx + rSpread, ry + 14 - rightLashLift);
+                    ctx.stroke();
+                }
+
+                // --- 8. Realistic 3D Nose Bridge, Alar Wings, Nostrils & Nasal Splint ---
+                // Side Nose Bridge Contour Shading (from inner brow down to nose tip)
+                const leftBridgeGrad = ctx.createLinearGradient(268, 375, 292, 460);
+                leftBridgeGrad.addColorStop(0, 'rgba(195, 115, 92, 0.35)');
+                leftBridgeGrad.addColorStop(1, 'rgba(195, 115, 92, 0.05)');
+                ctx.fillStyle = leftBridgeGrad;
+                ctx.beginPath();
+                ctx.moveTo(266, 368);
+                ctx.quadraticCurveTo(284, 415, 274, 468);
+                ctx.lineTo(290, 468);
+                ctx.quadraticCurveTo(292, 415, 282, 368);
+                ctx.closePath();
+                ctx.fill();
+
+                const rightBridgeGrad = ctx.createLinearGradient(332, 375, 308, 460);
+                rightBridgeGrad.addColorStop(0, 'rgba(195, 115, 92, 0.35)');
+                rightBridgeGrad.addColorStop(1, 'rgba(195, 115, 92, 0.05)');
+                ctx.fillStyle = rightBridgeGrad;
+                ctx.beginPath();
+                ctx.moveTo(334, 368);
+                ctx.quadraticCurveTo(316, 415, 326, 468);
+                ctx.lineTo(310, 468);
+                ctx.quadraticCurveTo(308, 415, 318, 368);
+                ctx.closePath();
+                ctx.fill();
+
+                // Sculpted Nose Tip & Alar Base Shading
+                const noseTipShadow = ctx.createRadialGradient(300, 476, 4, 300, 474, 28);
+                noseTipShadow.addColorStop(0, 'rgba(198, 114, 90, 0.45)');
+                noseTipShadow.addColorStop(1, 'rgba(198, 114, 90, 0)');
+                ctx.fillStyle = noseTipShadow;
+                ctx.beginPath();
+                ctx.ellipse(300, 474, 28, 16, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Soft Alar Creases (Sides of nostrils)
+                ctx.strokeStyle = 'rgba(182, 98, 76, 0.55)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(279, 471, 9, Math.PI * 0.55, Math.PI * 1.35);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(321, 471, 9, -Math.PI * 0.35, Math.PI * 0.45);
+                ctx.stroke();
+
+                // Realistic Teardrop Nostrils
+                ctx.fillStyle = '#8c4a36';
+                ctx.beginPath();
+                ctx.ellipse(289, 478, 5.5, 3.2, 0.28, 0, Math.PI * 2);
+                ctx.ellipse(311, 478, 5.5, 3.2, -0.28, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Luminous Nose Bridge & Tip Highlight
+                ctx.fillStyle = 'rgba(255, 252, 248, 0.78)';
+                ctx.beginPath();
+                ctx.ellipse(300, 425, 4.5, 32, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(300, 467, 6.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // White Padded Nose Splint Bandage + Yellow Medical Tapes (Fades as Step 4 completes)
+                if (state.noseBandage.cottonSplint > 0.01) {
+                    ctx.save();
+                    ctx.globalAlpha = state.noseBandage.cottonSplint;
+                    const bandageGrad = ctx.createLinearGradient(265, 385, 335, 475);
+                    bandageGrad.addColorStop(0, '#ffffff');
+                    bandageGrad.addColorStop(0.55, '#f1f5f9');
+                    bandageGrad.addColorStop(1, '#cbd5e1');
+                    ctx.fillStyle = bandageGrad;
+                    ctx.strokeStyle = '#94a3b8';
+                    ctx.lineWidth = 2;
+
+                    ctx.beginPath();
+                    ctx.moveTo(300, 384);
+                    ctx.bezierCurveTo(322, 384, 326, 435, 338, 464);
+                    ctx.bezierCurveTo(340, 475, 322, 478, 314, 472);
+                    ctx.quadraticCurveTo(300, 480, 286, 472);
+                    ctx.bezierCurveTo(278, 478, 260, 475, 262, 464);
+                    ctx.bezierCurveTo(274, 435, 278, 384, 300, 384);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Gauze Cross-Hatch Texture on Bandage
+                    ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+                    ctx.lineWidth = 1;
+                    for (let y = 395; y <= 465; y += 8) {
+                        ctx.beginPath();
+                        ctx.moveTo(274, y);
+                        ctx.lineTo(326, y);
+                        ctx.stroke();
+                    }
+
+                    if (state.noseBandage.topTape > 0.01) {
+                        ctx.globalAlpha = state.noseBandage.topTape;
+                        ctx.fillStyle = '#fde047';
+                        ctx.strokeStyle = '#eab308';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(273, 412, 54, 11, 4);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+
+                    if (state.noseBandage.bottomTape > 0.01) {
+                        ctx.globalAlpha = state.noseBandage.bottomTape;
+                        ctx.fillStyle = '#fde047';
+                        ctx.strokeStyle = '#eab308';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(268, 434, 64, 11, 4);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                // --- 9. Philtrum Dimple & Realistic 3D Glossy Coral-Rose Lips ---
+                // Philtrum ridges above Cupid's bow
+                ctx.strokeStyle = 'rgba(198, 118, 94, 0.35)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(294, 486);
+                ctx.lineTo(292, 509);
+                ctx.moveTo(306, 486);
+                ctx.lineTo(308, 509);
+                ctx.stroke();
+
+                // Cupid's Bow Highlight
+                ctx.strokeStyle = 'rgba(255, 252, 248, 0.75)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(280, 511);
+                ctx.quadraticCurveTo(292, 505, 300, 512);
+                ctx.quadraticCurveTo(308, 505, 320, 511);
+                ctx.stroke();
+
+                // Upper Lip 3D Gradient
+                const upperLipGrad = ctx.createLinearGradient(300, 506, 300, 524);
+                upperLipGrad.addColorStop(0, '#f43f5e');
+                upperLipGrad.addColorStop(0.65, '#e11d48');
+                upperLipGrad.addColorStop(1, '#9f1239');
+                ctx.fillStyle = upperLipGrad;
+
+                ctx.beginPath();
+                ctx.moveTo(254, 518);
+                ctx.quadraticCurveTo(280, 505, 293, 512);
+                ctx.quadraticCurveTo(300, 516, 307, 512);
+                ctx.quadraticCurveTo(320, 505, 346, 518);
+                ctx.quadraticCurveTo(300, 524, 254, 518);
+                ctx.closePath();
+                ctx.fill();
+
+                // Lower Lip Plush 3D Gradient
+                const lowerLipGrad = ctx.createRadialGradient(300, 528, 4, 300, 530, 38);
+                lowerLipGrad.addColorStop(0, '#fb7185');
+                lowerLipGrad.addColorStop(0.6, '#e11d48');
+                lowerLipGrad.addColorStop(1, '#be123c');
+                ctx.fillStyle = lowerLipGrad;
+
+                ctx.beginPath();
+                ctx.moveTo(254, 518);
+                ctx.quadraticCurveTo(300, 524, 346, 518);
+                ctx.quadraticCurveTo(326, 544, 274, 544);
+                ctx.closePath();
+                ctx.fill();
+
+                // Oral Commissure (Lip Corner Shadows & Center Part Line)
+                ctx.strokeStyle = '#881337';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(252, 517);
+                ctx.quadraticCurveTo(276, 521, 300, 520);
+                ctx.quadraticCurveTo(324, 521, 348, 517);
+                ctx.stroke();
+
+                // Realistic Multi-Point Lip Gloss Specular Reflections
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.68)';
+                ctx.beginPath();
+                ctx.ellipse(290, 530, 11, 3.2, -0.08, 0, Math.PI * 2);
+                ctx.ellipse(311, 530, 6, 2.5, 0.08, 0, Math.PI * 2);
+                ctx.fill();
+
+                // --- 10. Step 0: Detailed Blemishes & Redness Spots (Cleaned by Wet Wipes) ---
+                state.dirtSpots.forEach(spot => {
+                    if (spot.alpha > 0.02) {
+                        ctx.save();
+                        ctx.globalAlpha = spot.alpha;
+                        const g = ctx.createRadialGradient(spot.x, spot.y, 2, spot.x, spot.y, spot.r);
+                        g.addColorStop(0, 'rgba(220, 68, 82, 0.88)');
+                        g.addColorStop(0.55, 'rgba(205, 108, 102, 0.48)');
+                        g.addColorStop(1, 'rgba(205, 108, 102, 0)');
+                        ctx.fillStyle = g;
+                        ctx.beginPath();
+                        ctx.arc(spot.x, spot.y, spot.r, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Tiny pore center on blemish
+                        ctx.fillStyle = 'rgba(254, 226, 226, 0.75)';
+                        ctx.beginPath();
+                        ctx.arc(spot.x - 2, spot.y - 2, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        if (activeTool === 0) {
+                            ctx.strokeStyle = 'rgba(244, 114, 182, 0.8)';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([4, 4]);
+                            ctx.beginPath();
+                            ctx.arc(spot.x, spot.y, spot.r + 4 + Math.sin(time * 0.006) * 2, 0, Math.PI * 2);
+                            ctx.stroke();
+                        }
+                        ctx.restore();
+                    }
+                });
+
+                // --- 11. Step 1: Dry Flaky Skin Patches (Cleaned by Dermaplane Blade) ---
+                state.dryPatches.forEach(patch => {
+                    if (patch.alpha > 0.02) {
+                        ctx.save();
+                        ctx.globalAlpha = patch.alpha;
+                        ctx.fillStyle = 'rgba(255, 250, 245, 0.52)';
+                        ctx.strokeStyle = 'rgba(203, 213, 225, 0.85)';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.ellipse(patch.x, patch.y, patch.r, patch.r * 0.65, 0.2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        if (activeTool === 1) {
+                            ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([5, 3]);
+                            ctx.beginPath();
+                            ctx.arc(patch.x, patch.y, patch.r + 3 + Math.sin(time * 0.006) * 2, 0, Math.PI * 2);
+                            ctx.stroke();
+                        }
+                        ctx.restore();
+                    }
+                });
+
+                // --- Step 3 & Step 4 Target Guides when active ---
+                if (activeTool === 3) {
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(129, 140, 248, 0.85)';
+                    ctx.lineWidth = 2.5;
+                    ctx.setLineDash([5, 4]);
+                    if (state.eyeLift.leftProgress < 100) {
+                        ctx.beginPath();
+                        ctx.arc(220, 412, 34 + Math.sin(time * 0.006) * 3, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    if (state.eyeLift.rightProgress < 100) {
+                        ctx.beginPath();
+                        ctx.arc(380, 412, 34 + Math.sin(time * 0.006) * 3, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                } else if (activeTool === 4 && state.noseBandage.cottonSplint > 0.02) {
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(45, 212, 191, 0.9)';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.arc(300, 442, 46 + Math.sin(time * 0.006) * 3, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                // --- 12. Decorative Pink Wet Wipes Pack in Bottom-Left Corner (Matches Reference Image) ---
+                ctx.save();
+                ctx.translate(95, 692);
+                ctx.rotate(-0.12);
+                // Soft glow behind pack
+                const packGlow = ctx.createRadialGradient(0, 0, 10, 0, 0, 75);
+                packGlow.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+                packGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = packGlow;
+                ctx.beginPath();
+                ctx.arc(0, 0, 75, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Pink Pouch Body
+                const pouchGrad = ctx.createLinearGradient(-55, -25, 55, 35);
+                pouchGrad.addColorStop(0, '#ff66b2');
+                pouchGrad.addColorStop(0.5, '#ff1f8f');
+                pouchGrad.addColorStop(1, '#c20062');
+                ctx.fillStyle = pouchGrad;
+                ctx.strokeStyle = '#9d174d';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.roundRect(-55, -22, 110, 62, 12);
+                ctx.fill();
+                ctx.stroke();
+
+                // White Flip Dispenser Ring & Open Lid
+                ctx.fillStyle = '#fdf2f8';
+                ctx.strokeStyle = '#f472b6';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(-30, -16, 60, 32, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.ellipse(-6, -32, 24, 13, -0.15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // White Tissue Pulling Out
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.beginPath();
+                ctx.moveTo(-10, -2);
+                ctx.quadraticCurveTo(12, -38, 42, -18);
+                ctx.quadraticCurveTo(32, 8, 6, 8);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // --- Draw Top-Right Surgical Overhead Lamp (Exact match to reference photo) ---
+            function drawSurgicalLamp() {
+                ctx.save();
+                // Warm Spotlight Cone when Lamp is On
+                if (lampOn) {
+                    const beamGrad = ctx.createRadialGradient(485, 165, 30, 315, 385, 340);
+                    beamGrad.addColorStop(0, 'rgba(255, 253, 220, 0.35)');
+                    beamGrad.addColorStop(0.6, 'rgba(255, 250, 205, 0.12)');
+                    beamGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                    ctx.fillStyle = beamGrad;
+                    ctx.beginPath();
+                    ctx.arc(315, 385, 340, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Lamp Metallic Rim & Housing at Top-Right
+                ctx.translate(495, 145);
+                // Bottom handle grip
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.arc(-55, 85, 18, 0.2, Math.PI * 1.1);
+                ctx.stroke();
+
+                // Outer Blue-Silver Bezel
+                const housingGrad = ctx.createLinearGradient(-105, -105, 105, 105);
+                housingGrad.addColorStop(0, '#93c5fd');
+                housingGrad.addColorStop(0.5, '#3b82f6');
+                housingGrad.addColorStop(1, '#1e3a8a');
+                ctx.fillStyle = housingGrad;
+                ctx.strokeStyle = '#1e40af';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(0, 0, 104, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Colored Indicator Buttons on Bezel (Orange, Green, Yellow like reference)
+                const colors = ['#f97316', '#22c55e', '#eab308'];
+                colors.forEach((col, i) => {
+                    const a = Math.PI * 0.88 + i * 0.14;
+                    ctx.save();
+                    ctx.translate(Math.cos(a) * 90, Math.sin(a) * 90);
+                    ctx.rotate(a);
+                    ctx.fillStyle = col;
+                    ctx.beginPath();
+                    ctx.roundRect(-5, -8, 10, 16, 3);
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                // Inner Glowing Glass Lens
+                const lensGrad = ctx.createRadialGradient(-15, -15, 10, 0, 0, 78);
+                if (lampOn) {
+                    lensGrad.addColorStop(0, '#ffffff');
+                    lensGrad.addColorStop(0.6, '#e0f2fe');
+                    lensGrad.addColorStop(1, '#7dd3fc');
+                } else {
+                    lensGrad.addColorStop(0, '#cbd5e1');
+                    lensGrad.addColorStop(1, '#64748b');
+                }
+                ctx.fillStyle = lensGrad;
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(0, 0, 78, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            // --- Draw Active Gloved Hand / Medical Instrument Following Pointer ---
+            function drawActiveToolCursor() {
+                if (!pointer.active || state.allFinished) return;
+
+                ctx.save();
+                ctx.translate(pointer.x, pointer.y);
+                if (pointer.isDown) {
+                    ctx.scale(0.94, 0.94);
+                }
+
+                if (activeTool === 0) {
+                    // Soft White Cleansing Tissue Held by Blue-Gloved Fingers
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = '#bae6fd';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(-28, -10);
+                    ctx.quadraticCurveTo(0, -38, 34, -12);
+                    ctx.quadraticCurveTo(44, 18, 12, 32);
+                    ctx.quadraticCurveTo(-24, 34, -28, -10);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Pink Wet Wipe Pack Badge Hint
+                    ctx.fillStyle = '#ff3b9a';
+                    ctx.beginPath();
+                    ctx.arc(0, 4, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (activeTool === 1) {
+                    // Left Blue Gloved Hand holding the Dermaplaning Blade (From Reference Left Side)
+                    ctx.save();
+                    // Scalpel Handle & Rounded Silver Blade
+                    ctx.strokeStyle = '#bae6fd';
+                    ctx.lineWidth = 12;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(-115, -62);
+                    ctx.lineTo(-18, -10);
+                    ctx.stroke();
+
+                    // Silver Rounded Blade Tip at (0,0)
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.strokeStyle = '#64748b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(-22, -14);
+                    ctx.lineTo(14, 2);
+                    ctx.bezierCurveTo(18, 14, -2, 18, -16, 8);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Blue Surgical Gloved Hand Gripping Handle
+                    ctx.fillStyle = '#0096ff';
+                    ctx.strokeStyle = '#00509d';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.ellipse(-78, -32, 42, 26, -0.25, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Gloved Thumb & Index Finger
+                    ctx.fillStyle = '#38b6ff';
+                    ctx.beginPath();
+                    ctx.ellipse(-45, -36, 22, 11, 0.3, 0, Math.PI * 2);
+                    ctx.ellipse(-52, -16, 20, 10, -0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                } else if (activeTool === 2) {
+                    // Right Blue Gloved Hand holding the Copper/Silver Surgical Marker Pen (From Reference Right Side)
+                    ctx.save();
+                    // Pen Barrel
+                    ctx.strokeStyle = '#334155';
+                    ctx.lineWidth = 11;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(85, -85);
+                    ctx.lineTo(10, -10);
+                    ctx.stroke();
+
+                    // Copper Top End of Marker
+                    ctx.strokeStyle = '#d97706';
+                    ctx.lineWidth = 11;
+                    ctx.beginPath();
+                    ctx.moveTo(85, -85);
+                    ctx.lineTo(55, -55);
+                    ctx.stroke();
+
+                    // Marker Nib at (0,0)
+                    ctx.fillStyle = '#0f172a';
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(14, -6);
+                    ctx.lineTo(6, -14);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Right Blue Surgical Glove
+                    ctx.fillStyle = '#0096ff';
+                    ctx.strokeStyle = '#00509d';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.ellipse(68, -42, 40, 25, 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#38b6ff';
+                    ctx.beginPath();
+                    ctx.ellipse(38, -42, 20, 10, -0.35, 0, Math.PI * 2);
+                    ctx.ellipse(45, -24, 18, 10, 0.25, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                } else if (activeTool === 3) {
+                    // Silver Eyelid Forceps / Scissors Clamp (From Left Eye in Reference)
+                    ctx.strokeStyle = '#94a3b8';
+                    ctx.lineWidth = 4.5;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(-75, -14);
+                    ctx.lineTo(6, 0);
+                    ctx.moveTo(-75, 18);
+                    ctx.lineTo(6, 0);
+                    ctx.stroke();
+
+                    // Finger Loops
+                    ctx.strokeStyle = '#64748b';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.arc(-84, -18, 11, 0, Math.PI * 2);
+                    ctx.arc(-84, 22, 11, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else if (activeTool === 4) {
+                    // Soft Healing Cotton Puff & Tweezers for Nose Bandage Care
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = '#f472b6';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 22, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#fbcfe8';
+                    ctx.beginPath();
+                    ctx.arc(-6, -5, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+
+            // --- Draw Sparkles & Celebration Particles ---
+            function drawParticles() {
+                for (let i = sparkles.length - 1; i >= 0; i--) {
+                    const p = sparkles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha -= 0.03;
+                    if (p.alpha <= 0) {
+                        sparkles.splice(i, 1);
+                        continue;
+                    }
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fillStyle = p.color;
+                    ctx.translate(p.x, p.y);
+                    // Four-point star sparkle
+                    ctx.beginPath();
+                    ctx.moveTo(0, -p.size);
+                    ctx.quadraticCurveTo(0, 0, p.size, 0);
+                    ctx.quadraticCurveTo(0, 0, 0, p.size);
+                    ctx.quadraticCurveTo(0, 0, -p.size, 0);
+                    ctx.quadraticCurveTo(0, 0, 0, -p.size);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                for (let i = floatingHearts.length - 1; i >= 0; i--) {
+                    const h = floatingHearts[i];
+                    h.x += h.vx;
+                    h.y += h.vy;
+                    h.alpha -= 0.012;
+                    if (h.alpha <= 0) {
+                        floatingHearts.splice(i, 1);
+                        continue;
+                    }
+                    ctx.save();
+                    ctx.globalAlpha = h.alpha;
+                    ctx.font = `${h.size}px sans-serif`;
+                    ctx.fillText('✨', h.x, h.y);
+                    ctx.restore();
+                }
+            }
+
+            // --- Main Render Loop ---
+            function gameLoop(time) {
+                // Smoothly interpolate camera zoom
+                cameraZoom += (targetZoom - cameraZoom) * 0.14;
+
+                ctx.save();
+                // Scale virtual 600x760 coordinates onto physical canvas dimensions
+                ctx.scale(canvas.width / V_WIDTH, canvas.height / V_HEIGHT);
+
+                ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
+
+                // Apply smooth camera zoom centered on the patient's face
+                ctx.translate(ZOOM_CENTER_X, ZOOM_CENTER_Y);
+                ctx.scale(cameraZoom, cameraZoom);
+                ctx.translate(-ZOOM_CENTER_X, -ZOOM_CENTER_Y);
+
+                drawClinicBackground();
+                drawPatient(time);
+                drawSurgicalLamp();
+                drawParticles();
+                drawActiveToolCursor();
+
+                ctx.restore();
+                requestAnimationFrame(gameLoop);
+            }
+
+            // Initialize game state and start loop
+            createInitialState();
+            requestAnimationFrame(gameLoop);
+        };
+    </script>
+</body>
+</html>
